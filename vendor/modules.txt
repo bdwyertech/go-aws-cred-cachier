@@ -35,6 +35,9 @@ github.com/aws/aws-sdk-go/private/protocol/rest
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/gofrs/flock v0.7.1
+## explicit
+github.com/gofrs/flock
 # github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25
 ## explicit
 github.com/jcelliott/lumber

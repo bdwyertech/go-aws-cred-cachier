@@ -8,6 +8,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/gofrs/flock"
 	"github.com/mitchellh/go-homedir"
 	"github.com/mitchellh/hashstructure"
 	"github.com/sdomino/scribble"
@@ -90,6 +92,13 @@ func main() {
 			}
 		}
 	}
+	f := flock.New(filepath.Join(dbPath, ".lock"))
+	lockCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if _, err := f.TryLockContext(lockCtx, 500*time.Millisecond); err != nil {
+		log.Fatal(err)
+	}
+	defer f.Unlock()
 
 	// AWS Session
 	sess_opts := session.Options{
@@ -121,13 +130,19 @@ func main() {
 	fmt.Println(string(cred.ToProcessJson()))
 }
 
+var dbPath string
+
 func Db() (db *scribble.Driver) {
-	home, err := homedir.Dir()
-	if err != nil {
-		log.Fatal(err)
+
+	if dbPath == "" {
+		home, err := homedir.Dir()
+		if err != nil {
+			log.Fatal(err)
+		}
+		dbPath = filepath.Join(home, ".aws-cred-cachier")
 	}
-	dbPath := filepath.Join(home, ".aws-cred-cachier")
-	if db, err = scribble.New(dbPath, nil); err != nil {
+	db, err := scribble.New(dbPath, nil)
+	if err != nil {
 		log.Fatal(err)
 	}
 
