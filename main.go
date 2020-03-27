@@ -9,6 +9,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -61,6 +62,8 @@ func (c *AwsCredential) ToProcessJson() (jsonBytes []byte) {
 }
 
 func main() {
+	disableSharedConfig := flag.Bool("disable-shared-config", false, "Disable Shared Configuration (force use of EC2/ECS metadata, ignore AWS_PROFILE, etc.)")
+	flag.Parse()
 	// Calculate Request Hash (Args + AWS Env Vars)
 	req := append([]string{}, os.Args[1:]...)
 	for _, env := range os.Environ() {
@@ -92,6 +95,9 @@ func main() {
 	sess_opts := session.Options{
 		// Config:            *aws.NewConfig().WithRegion("us-east-1"),
 		SharedConfigState: session.SharedConfigEnable,
+	}
+	if *disableSharedConfig {
+		sess_opts.SharedConfigState = session.SharedConfigDisable
 	}
 
 	sess := session.Must(session.NewSessionWithOptions(sess_opts))
