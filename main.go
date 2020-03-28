@@ -65,6 +65,12 @@ func (c *AwsCredential) ToProcessJson() (jsonBytes []byte) {
 }
 
 func main() {
+	// Loop Detection
+	if callingPid := os.Getenv("_AWS_CRED_CACHIER_PID"); callingPid != "" {
+		log.Fatal("Loop detected! Called recursively by PID: ", callingPid)
+	}
+	os.Setenv("_AWS_CRED_CACHIER_PID", string(os.Getpid()))
+
 	disableSharedConfig := flag.Bool("disable-shared-config", false, "Disable Shared Configuration (force use of EC2/ECS metadata, ignore AWS_PROFILE, etc.)")
 	flag.Parse()
 	// Calculate Request Hash (Args + AWS Env Vars)
