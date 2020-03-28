@@ -10,3 +10,5 @@ require (
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/sdomino/scribble v0.0.0-20191024200645-4116320640ba
 )
+
+replace github.com/gofrs/flock => github.com/azr/flock v0.7.2-0.20200319085905-0eda2671edf3

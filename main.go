@@ -99,6 +99,7 @@ func main() {
 			}
 		}
 	}
+
 	f := flock.New(filepath.Join(dbPath, ".lock"))
 	lockCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
