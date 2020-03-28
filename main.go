@@ -64,17 +64,26 @@ func (c *AwsCredential) ToProcessJson() (jsonBytes []byte) {
 	return
 }
 
+var disableSharedConfig bool
+
+func init() {
+	if flag.Lookup("disable-shared-config") == nil {
+		flag.BoolVar(&disableSharedConfig, "disable-shared-config", false, "Disable Shared Configuration (force use of EC2/ECS metadata, ignore AWS_PROFILE, etc.)")
+	}
+}
+
 var retried bool
 
 func main() {
+	// Parse Flags
+
+	flag.Parse()
 	// Loop Detection
 	if callingPid := os.Getenv("_AWS_CRED_CACHIER_PID"); !retried && callingPid != "" {
 		log.Fatal("Loop detected! Called recursively by PID: ", callingPid)
 	}
 	os.Setenv("_AWS_CRED_CACHIER_PID", strconv.Itoa(os.Getpid()))
 
-	disableSharedConfig := flag.Bool("disable-shared-config", false, "Disable Shared Configuration (force use of EC2/ECS metadata, ignore AWS_PROFILE, etc.)")
-	flag.Parse()
 	// Calculate Request Hash (Args + AWS Env Vars)
 	req := append([]string{}, os.Args[1:]...)
 	for _, env := range os.Environ() {
@@ -120,7 +129,7 @@ func main() {
 		// Config:            *aws.NewConfig().WithRegion("us-east-1"),
 		SharedConfigState: session.SharedConfigEnable,
 	}
-	if *disableSharedConfig {
+	if disableSharedConfig {
 		sess_opts.SharedConfigState = session.SharedConfigDisable
 	}
 
