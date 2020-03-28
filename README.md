@@ -8,7 +8,7 @@ When running processes on large instances with high concurrency across many acco
 You may wish to explicity disable shared config, especially if you are leveraging custom profiles via `AWS_PROFILE`.  You can otherwise create a circular dependency (fork bomb)!
 
 ### Example Usage
-```
+```ini
 [default]
 region = us-east-1
 
