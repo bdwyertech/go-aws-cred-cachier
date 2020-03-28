@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -93,9 +94,10 @@ func main() {
 		}
 	}
 	f := flock.New(filepath.Join(dbPath, ".lock"))
-	lockCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	lockCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	if _, err := f.TryLockContext(lockCtx, 500*time.Millisecond); err != nil {
+	rand.Seed(time.Now().Unix() + int64(os.Getpid()))
+	if _, err := f.TryLockContext(lockCtx, time.Duration(rand.Intn(250)+500)*time.Millisecond); err != nil {
 		log.Fatal(err)
 	}
 	defer f.Unlock()
