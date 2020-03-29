@@ -74,12 +74,6 @@ func init() {
 func main() {
 	// Parse Flags
 	flag.Parse()
-	// Loop Detection
-	if callingPid := os.Getenv("_AWS_CRED_CACHIER_PID"); callingPid != "" {
-		log.Fatal("Loop detected! Called recursively by PID: ", callingPid)
-	}
-	os.Setenv("_AWS_CRED_CACHIER_PID", strconv.Itoa(os.Getpid()))
-
 	// Calculate Request Hash (Args + AWS Env Vars)
 	req := append([]string{}, os.Args[1:]...)
 	for _, env := range os.Environ() {
@@ -92,6 +86,13 @@ func main() {
 		log.Fatal(err)
 	}
 	csum := strconv.FormatUint(hash, 10)
+
+	// Loop Detection
+	if callingCsum := os.Getenv("_AWS_CRED_CACHIER_CSUM"); callingCsum == csum {
+		log.Fatal("Loop detected! Called recursively by PID: ", os.Getenv("_AWS_CRED_CACHIER_PID"))
+	}
+	os.Setenv("_AWS_CRED_CACHIER_CSUM", csum)
+	os.Setenv("_AWS_CRED_CACHIER_PID", strconv.Itoa(os.Getpid()))
 
 	// Attempt to Read Credentials
 	Read(csum)
@@ -132,6 +133,7 @@ func main() {
 
 	cred := AwsCredential{creds, expiresAt.Format(time.RFC3339)}
 
+	// Write to Cache
 	if err := Db().Write("cdb", csum, cred); err != nil {
 		log.Fatal(err)
 	}
@@ -158,6 +160,7 @@ func Db() (db *scribble.Driver) {
 	return
 }
 
+// Read cached credentials and emit them if valid
 func Read(request_hash string) {
 	cred := AwsCredential{}
 	if err := Db().Read("cdb", request_hash, &cred); err == nil {
