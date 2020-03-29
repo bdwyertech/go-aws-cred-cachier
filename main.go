@@ -71,14 +71,11 @@ func init() {
 	}
 }
 
-var retried bool
-
 func main() {
 	// Parse Flags
-
 	flag.Parse()
 	// Loop Detection
-	if callingPid := os.Getenv("_AWS_CRED_CACHIER_PID"); !retried && callingPid != "" {
+	if callingPid := os.Getenv("_AWS_CRED_CACHIER_PID"); callingPid != "" {
 		log.Fatal("Loop detected! Called recursively by PID: ", callingPid)
 	}
 	os.Setenv("_AWS_CRED_CACHIER_PID", strconv.Itoa(os.Getpid()))
@@ -96,19 +93,8 @@ func main() {
 	}
 	csum := strconv.FormatUint(hash, 10)
 
-	cred := AwsCredential{}
-	if err := Db().Read("cdb", csum, &cred); err == nil {
-		if cred.Expiration != "" {
-			expires, err := time.Parse(time.RFC3339, cred.Expiration)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if expires.After(time.Now().Add(time.Minute * 1)) {
-				fmt.Println(string(cred.ToProcessJson()))
-				return
-			}
-		}
-	}
+	// Attempt to Read Credentials
+	Read(csum)
 
 	f := flock.New(filepath.Join(dbPath, ".lock"))
 	rand.Seed(time.Now().Unix() + int64(os.Getpid()))
@@ -118,6 +104,8 @@ func main() {
 			break
 		}
 		time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
+		// Retry Reading Credentials
+		Read(csum)
 	}
 	defer f.Unlock()
 
@@ -142,7 +130,7 @@ func main() {
 		expiresAt = time.Now().Add(time.Minute * 5)
 	}
 
-	cred = AwsCredential{creds, expiresAt.Format(time.RFC3339)}
+	cred := AwsCredential{creds, expiresAt.Format(time.RFC3339)}
 
 	if err := Db().Write("cdb", csum, cred); err != nil {
 		log.Fatal(err)
@@ -168,4 +156,20 @@ func Db() (db *scribble.Driver) {
 	}
 
 	return
+}
+
+func Read(request_hash string) {
+	cred := AwsCredential{}
+	if err := Db().Read("cdb", request_hash, &cred); err == nil {
+		if cred.Expiration != "" {
+			expires, err := time.Parse(time.RFC3339, cred.Expiration)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if expires.After(time.Now().Add(time.Minute * 1)) {
+				fmt.Println(string(cred.ToProcessJson()))
+				os.Exit(0)
+			}
+		}
+	}
 }
