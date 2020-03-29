@@ -8,7 +8,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -112,15 +111,13 @@ func main() {
 	}
 
 	f := flock.New(filepath.Join(dbPath, ".lock"))
-	lockCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
 	rand.Seed(time.Now().Unix() + int64(os.Getpid()))
-	if _, err := f.TryLockContext(lockCtx, time.Duration(rand.Intn(250)+500)*time.Millisecond); err != nil {
-		if retried {
-			log.Fatal(err)
+	for {
+		f.Lock()
+		if f.Locked() {
+			break
 		}
-		retried = true
-		main()
+		time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
 	}
 	defer f.Unlock()
 
