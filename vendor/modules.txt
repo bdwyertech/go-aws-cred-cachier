@@ -1,3 +1,6 @@
+# bou.ke/monkey v1.0.2
+## explicit
+bou.ke/monkey
 # github.com/aws/aws-sdk-go v1.29.33
 ## explicit
 github.com/aws/aws-sdk-go/aws

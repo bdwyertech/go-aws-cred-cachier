@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"bou.ke/monkey"
 	"github.com/kami-zh/go-capturer"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,6 +26,7 @@ func TestDefault(t *testing.T) {
 
 	// Disable Loop Detection
 	os.Setenv("_AWS_CRED_CACHIER_CSUM", "TEST")
+	defer os.Unsetenv("_AWS_CRED_CACHIER_CSUM")
 
 	stderr := capturer.CaptureStderr(func() {
 		// Mask STDOUT
@@ -40,4 +43,26 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY", cred.SecretAccessKey)
 
 	assert.Empty(t, stderr, "STDERR should be empty")
+}
+
+func TestLoop(t *testing.T) {
+	cwd, err := os.Getwd()
+	assert.Nil(t, err)
+	os.Setenv("AWS_CONFIG_FILE", filepath.Join(cwd, "test", "fixtures", "aws_config"))
+	defer os.Unsetenv("AWS_CONFIG_FILE")
+	os.Setenv("AWS_PROFILE", "fake")
+	defer os.Unsetenv("AWS_PROFILE")
+
+	fakeLogFatal := func(msg ...interface{}) {
+		assert.Equal(t, "Loop detected! Called recursively by PID: ", msg[0])
+		panic("log.Fatal called")
+	}
+
+	patch := monkey.Patch(log.Fatal, fakeLogFatal)
+	defer patch.Unpatch()
+
+	// First Invocation
+	main()
+	// Second Invocation
+	assert.PanicsWithValue(t, "log.Fatal called", main, "log.Fatal was not called")
 }
