@@ -95,7 +95,9 @@ func main() {
 	os.Setenv("_AWS_CRED_CACHIER_PID", strconv.Itoa(os.Getpid()))
 
 	// Attempt to Read Credentials
-	Read(csum)
+	if ok := Read(csum); ok {
+		return
+	}
 
 	f := flock.New(filepath.Join(dbPath, ".lock"))
 	rand.Seed(time.Now().Unix() + int64(os.Getpid()))
@@ -161,7 +163,7 @@ func Db() (db *scribble.Driver) {
 }
 
 // Read cached credentials and emit them if valid
-func Read(request_hash string) {
+func Read(request_hash string) (valid bool) {
 	cred := AwsCredential{}
 	if err := Db().Read("cdb", request_hash, &cred); err == nil {
 		if cred.Expiration != "" {
@@ -170,9 +172,10 @@ func Read(request_hash string) {
 				log.Fatal(err)
 			}
 			if expires.After(time.Now().Add(time.Minute * 1)) {
+				valid = true
 				fmt.Println(string(cred.ToProcessJson()))
-				os.Exit(0)
 			}
 		}
 	}
+	return
 }

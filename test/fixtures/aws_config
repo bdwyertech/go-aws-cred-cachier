@@ -1,0 +1,13 @@
+[default]
+region = us-east-1
+
+[profile cached]
+credential_process = /usr/local/bin/aws-cred-cachier
+
+[profile my_cool_role]
+role_arn = arn:aws:iam::123456789876:role/MyCoolRole
+source_profile = cached
+
+[profile fake]
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
