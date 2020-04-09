@@ -1,7 +1,7 @@
 # bou.ke/monkey v1.0.2
 ## explicit
 bou.ke/monkey
-# github.com/aws/aws-sdk-go v1.29.33
+# github.com/aws/aws-sdk-go v1.30.7
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -46,7 +46,7 @@ github.com/gofrs/flock
 # github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25
 ## explicit
 github.com/jcelliott/lumber
-# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+# github.com/jmespath/go-jmespath v0.3.0
 github.com/jmespath/go-jmespath
 # github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d
 ## explicit
@@ -62,7 +62,7 @@ github.com/pmezard/go-difflib/difflib
 # github.com/sdomino/scribble v0.0.0-20191024200645-4116320640ba
 ## explicit
 github.com/sdomino/scribble
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.5.1
 ## explicit
 github.com/stretchr/testify/assert
 # gopkg.in/yaml.v2 v2.2.2
