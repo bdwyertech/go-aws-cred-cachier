@@ -75,6 +75,12 @@ func init() {
 func main() {
 	// Parse Flags
 	flag.Parse()
+
+	if versionFlag {
+		showVersion()
+		os.Exit(0)
+	}
+
 	// Calculate Request Hash (Args + AWS Env Vars)
 	req := append([]string{}, os.Args[1:]...)
 	for _, env := range os.Environ() {
