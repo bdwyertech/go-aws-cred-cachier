@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gofrs/flock"
@@ -115,6 +116,7 @@ func main() {
 	// AWS Session
 	sess_opts := session.Options{
 		// Config:            *aws.NewConfig().WithRegion("us-east-1"),
+		Config:            *aws.NewConfig().WithCredentialsChainVerboseErrors(true),
 		SharedConfigState: session.SharedConfigEnable,
 	}
 	if disableSharedConfig {
