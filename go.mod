@@ -11,7 +11,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/sdomino/scribble v0.0.0-20191024200645-4116320640ba
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 )
 
 replace github.com/gofrs/flock => github.com/azr/flock v0.7.2-0.20200319085905-0eda2671edf3
