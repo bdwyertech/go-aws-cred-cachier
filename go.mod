@@ -10,7 +10,7 @@ require (
 	github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/hashstructure v1.0.0
-	github.com/sdomino/scribble v0.0.0-20191024200645-4116320640ba
+	github.com/sdomino/scribble v0.0.0-20200707180004-3cc68461d505
 	github.com/stretchr/testify v1.6.1
 )
 
