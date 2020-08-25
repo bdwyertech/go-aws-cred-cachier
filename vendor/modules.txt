@@ -1,7 +1,7 @@
 # bou.ke/monkey v1.0.2
 ## explicit
 bou.ke/monkey
-# github.com/aws/aws-sdk-go v1.33.2
+# github.com/aws/aws-sdk-go v1.34.10
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -40,7 +40,7 @@ github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/davecgh/go-spew v1.1.0
 github.com/davecgh/go-spew/spew
-# github.com/gofrs/flock v0.7.1 => github.com/azr/flock v0.7.2-0.20200319085905-0eda2671edf3
+# github.com/gofrs/flock v0.7.3
 ## explicit
 github.com/gofrs/flock
 # github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25
@@ -67,4 +67,3 @@ github.com/sdomino/scribble
 github.com/stretchr/testify/assert
 # gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 gopkg.in/yaml.v3
-# github.com/gofrs/flock => github.com/azr/flock v0.7.2-0.20200319085905-0eda2671edf3
