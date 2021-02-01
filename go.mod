@@ -11,5 +11,5 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/hashstructure v1.1.0
 	github.com/sdomino/scribble v0.0.0-20200707180004-3cc68461d505
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 )
