@@ -134,8 +134,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	expiresAt := creds.Expires
-	if !creds.CanExpire {
+	var expiresAt time.Time
+	if creds.CanExpire {
+		expiresAt = creds.Expires
+	} else {
 		expiresAt = time.Now().Add(time.Minute * 5)
 	}
 
