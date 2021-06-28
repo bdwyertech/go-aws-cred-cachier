@@ -24,7 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/gofrs/flock"
 	"github.com/mitchellh/go-homedir"
-	"github.com/mitchellh/hashstructure"
+	"github.com/mitchellh/hashstructure/v2"
 	"github.com/sdomino/scribble"
 )
 
@@ -88,7 +88,7 @@ func main() {
 			req = append(req, env)
 		}
 	}
-	hash, err := hashstructure.Hash(req, nil)
+	hash, err := hashstructure.Hash(req, hashstructure.FormatV2, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -73,9 +73,9 @@ github.com/kami-zh/go-capturer
 # github.com/mitchellh/go-homedir v1.1.0
 ## explicit
 github.com/mitchellh/go-homedir
-# github.com/mitchellh/hashstructure v1.1.0
+# github.com/mitchellh/hashstructure/v2 v2.0.2
 ## explicit
-github.com/mitchellh/hashstructure
+github.com/mitchellh/hashstructure/v2
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/sdomino/scribble v0.0.0-20200707180004-3cc68461d505
