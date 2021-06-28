@@ -2,12 +2,13 @@
 //
 // AWS Credential Cachier
 //
-// Copyright © 2020 Brian Dwyer - Intelligent Digital Services
+// Copyright © 2021 Brian Dwyer - Intelligent Digital Services
 //
 
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -19,9 +20,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/gofrs/flock"
 	"github.com/mitchellh/go-homedir"
 	"github.com/mitchellh/hashstructure"
@@ -29,7 +29,7 @@ import (
 )
 
 type AwsCredential struct {
-	credentials.Value
+	aws.Credentials
 	Expiration string
 }
 
@@ -119,25 +119,23 @@ func main() {
 	}
 	defer f.Unlock()
 
-	// AWS Session
-	sess_opts := session.Options{
-		// Config:            *aws.NewConfig().WithRegion("us-east-1"),
-		Config:            *aws.NewConfig().WithCredentialsChainVerboseErrors(true),
-		SharedConfigState: session.SharedConfigEnable,
-	}
+	var cfg aws.Config
 	if disableSharedConfig {
-		sess_opts.SharedConfigState = session.SharedConfigDisable
+		cfg, err = config.LoadDefaultConfig(context.Background(), config.WithSharedConfigFiles([]string{}), config.WithSharedCredentialsFiles([]string{}))
+	} else {
+		cfg, err = config.LoadDefaultConfig(context.Background())
+	}
+	if err != nil {
+		panic(err)
 	}
 
-	sess := session.Must(session.NewSessionWithOptions(sess_opts))
-
-	creds, err := sess.Config.Credentials.Get()
+	creds, err := cfg.Credentials.Retrieve(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	expiresAt, err := sess.Config.Credentials.ExpiresAt()
-	if err != nil {
+	expiresAt := creds.Expires
+	if !creds.CanExpire {
 		expiresAt = time.Now().Add(time.Minute * 5)
 	}
 
