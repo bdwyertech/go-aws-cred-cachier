@@ -129,7 +129,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	creds, err := cfg.Credentials.Retrieve(context.Background())
+	creds, err := aws.NewCredentialsCache(cfg.Credentials).Retrieve(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
