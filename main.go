@@ -126,7 +126,7 @@ func main() {
 		cfg, err = config.LoadDefaultConfig(context.Background())
 	}
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	creds, err := cfg.Credentials.Retrieve(context.Background())
