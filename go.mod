@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	bou.ke/monkey v1.0.2
-	github.com/aws/aws-sdk-go-v2 v1.7.0
+	github.com/aws/aws-sdk-go-v2 v1.9.0
 	github.com/aws/aws-sdk-go-v2/config v1.4.0
 	github.com/gofrs/flock v0.8.1
 	github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25 // indirect
