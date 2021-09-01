@@ -1,3 +1,28 @@
+# v1.7.0 (2021-08-27)
+
+* **Feature**: Updated `github.com/aws/smithy-go` to latest version
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.6.1 (2021-08-19)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.6.0 (2021-08-04)
+
+* **Feature**: adds error handling for defered close calls
+* **Dependency Update**: Updated `github.com/aws/smithy-go` to latest version.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.5.0 (2021-07-15)
+
+* **Feature**: Support has been added for EC2 IPv6-enabled Instance Metadata Service Endpoints.
+* **Dependency Update**: Updated `github.com/aws/smithy-go` to latest version
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.4.1 (2021-07-01)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.4.0 (2021-06-25)
 
 * **Feature**: Adds configuration setting for enabling endpoint discovery.
