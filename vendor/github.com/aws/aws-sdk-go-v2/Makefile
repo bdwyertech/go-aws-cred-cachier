@@ -51,7 +51,7 @@ all: generate unit
 gen-config-asserts gen-repo-mod-replace gen-mod-replace-smithy gen-mod-dropreplace-smithy gen-aws-ptrs tidy-modules-% \
 add-module-license-files sync-models sync-endpoints-model sync-endpoints.json clone-v1-models gen-endpoint-prefix.json \
 sync-api-models copy-attributevalue-feature min-go-version-% update-requires smithy-annotate-stable \
-update-module-metadata
+update-module-metadata download-modules-%
 
 generate: smithy-generate update-requires gen-repo-mod-replace update-module-metadata smithy-annotate-stable \
 gen-config-asserts copy-attributevalue-feature  gen-mod-dropreplace-smithy min-go-version-. tidy-modules-. \
@@ -118,6 +118,16 @@ tidy-modules-%:
 	cd ./internal/repotools/cmd/eachmodule \
 		&& go run . -p $(subst _,/,$(subst tidy-modules-,,$@)) ${EACHMODULE_FLAGS} \
 		"go mod tidy"
+
+download-modules-%:
+	@# download command that uses the pattern to define the root path that the
+	@# module testing will start from. Strips off the "download-modules-" and
+	@# replaces all "_" with "/".
+	@#
+	@# e.g. download-modules-internal_protocoltest
+	cd ./internal/repotools/cmd/eachmodule \
+		&& go run . -p $(subst _,/,$(subst download-modules-,,$@)) ${EACHMODULE_FLAGS} \
+		"go mod download all"
 
 add-module-license-files:
 	cd internal/repotools/cmd/eachmodule && \
@@ -306,6 +316,27 @@ ci-test-generate-validate:
 	if [ "$$gitstatus" != "" ] && [ "$$gitstatus" != "skipping validation" ]; then echo "$$gitstatus"; exit 1; fi
 	git update-index --no-assume-unchanged go.mod go.sum
 
+ci-lint: ci-lint-.
+
+ci-lint-%:
+	@# Run golangci-lint command that uses the pattern to define the root path that the
+	@# module check will start from. Strips off the "ci-lint-" and
+	@# replaces all "_" with "/".
+	@#
+	@# e.g. ci-lint-internal_protocoltest
+	cd ./internal/repotools/cmd/eachmodule \
+		&& go run . -p $(subst _,/,$(subst ci-lint-,,$@)) \
+			-fail-fast=false \
+			-c 1 \
+			-skip="internal/repotools" \
+			"golangci-lint run"
+
+ci-lint-install:
+	@# Installs golangci-lint at GoPATH.
+	@# This should be used to run golangci-lint locally.
+	@#
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
 #######################
 # Integration Testing #
 #######################
@@ -411,32 +442,24 @@ sdkv1check:
 ###################
 # Sandbox Testing #
 ###################
-.PHONY: sandbox-tests sandbox-build-go1.15 sandbox-go1.15 sandbox-test-go1.15 sandbox-build-go1.16 \
-sandbox-go1.16 sandbox-test-go1.16 sandbox-build-gotip sandbox-gotip sandbox-test-gotip update-aws-golang-tip
+.PHONY: sandbox-tests sandbox-build-% sandbox-run-% sandbox-test-% update-aws-golang-tip
 
-sandbox-tests: sandbox-test-go1.15 sandbox-test-go1.16 sandbox-test-gotip
+sandbox-tests: sandbox-test-go1.15 sandbox-test-go1.16 sandbox-test-go1.17 sandbox-test-gotip
 
-sandbox-build-go1.15:
-	docker build -f ./internal/awstesting/sandbox/Dockerfile.test.go1.15 -t "aws-sdk-go-v2-1.15" .
-sandbox-go1.15: sandbox-build-go1.15
-	docker run -i -t aws-sdk-go-v2-1.15 bash
-sandbox-test-go1.15: sandbox-build-go1.15
-	docker run -t aws-sdk-go-v2-1.15
-
-sandbox-build-go1.16:
-	docker build -f ./internal/awstesting/sandbox/Dockerfile.test.go1.16 -t "aws-sdk-go-v2-1.16" .
-sandbox-go1.16: sandbox-build-go1.16
-	docker run -i -t aws-sdk-go-v2-1.16 bash
-sandbox-test-go1.16: sandbox-build-go1.16
-	docker run -t aws-sdk-go-v2-1.16
-
-sandbox-build-gotip:
-	@echo "Run make update-aws-golang-tip, if this test fails because missing aws-golang:tip container"
-	docker build -f ./internal/awstesting/sandbox/Dockerfile.test.gotip -t "aws-sdk-go-v2-tip" .
-sandbox-gotip: sandbox-build-gotip
-	docker run -i -t aws-sdk-go-v2-tip bash
-sandbox-test-gotip: sandbox-build-gotip
-	docker run -t aws-sdk-go-v2-tip
+sandbox-build-%:
+	@# sandbox-build-go1.17
+	@# sandbox-build-gotip
+	docker build \
+		-f ./internal/awstesting/sandbox/Dockerfile.test.$(subst sandbox-build-,,$@) \
+		-t "aws-sdk-go-$(subst sandbox-build-,,$@)" .
+sandbox-run-%: sandbox-build-%
+	@# sandbox-run-go1.17
+	@# sandbox-run-gotip
+	docker run -i -t "aws-sdk-go-$(subst sandbox-run-,,$@)" bash
+sandbox-test-%: sandbox-build-%
+	@# sandbox-test-go1.17
+	@# sandbox-test-gotip
+	docker run -t "aws-sdk-go-$(subst sandbox-test-,,$@)"
 
 update-aws-golang-tip:
 	docker build --no-cache=true -f ./internal/awstesting/sandbox/Dockerfile.golang-tip -t "aws-golang:tip" .
