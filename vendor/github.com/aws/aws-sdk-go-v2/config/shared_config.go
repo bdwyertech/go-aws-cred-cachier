@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -59,10 +60,17 @@ const (
 	// S3 ARN Region Usage
 	s3UseARNRegionKey = "s3_use_arn_region"
 
+	ec2MetadataServiceEndpointModeKey = "ec2_metadata_service_endpoint_mode"
+
+	ec2MetadataServiceEndpointKey = "ec2_metadata_service_endpoint"
+
 	// DefaultSharedConfigProfile is the default profile to be used when
 	// loading configuration from the config files if another profile name
 	// is not provided.
 	DefaultSharedConfigProfile = `default`
+
+	// S3 Disable Multi-Region AccessPoints
+	s3DisableMultiRegionAccessPointsKey = `s3_disable_multiregion_access_points`
 )
 
 // defaultSharedConfigProfile allows for swapping the default profile for testing
@@ -152,6 +160,22 @@ type SharedConfig struct {
 	//
 	// s3_use_arn_region=true
 	S3UseARNRegion *bool
+
+	// Specifies the EC2 Instance Metadata Service default endpoint selection mode (IPv4 or IPv6)
+	//
+	// ec2_metadata_service_endpoint_mode=IPv6
+	EC2IMDSEndpointMode imds.EndpointModeState
+
+	// Specifies the EC2 Instance Metadata Service endpoint to use. If specified it overrides EC2IMDSEndpointMode.
+	//
+	// ec2_metadata_service_endpoint=http://fd00:ec2::254
+	EC2IMDSEndpoint string
+
+	// Specifies if the S3 service should disable support for Multi-Region
+	// access-points
+	//
+	// s3_disable_multiregion_access_points=true
+	S3DisableMultiRegionAccessPoints *bool
 }
 
 // GetS3UseARNRegion returns if the S3 service should allow ARNs to direct the region
@@ -173,6 +197,16 @@ func (c SharedConfig) GetEnableEndpointDiscovery(ctx context.Context) (value aws
 	return c.EnableEndpointDiscovery, true, nil
 }
 
+// GetS3DisableMultiRegionAccessPoints returns if the S3 service should disable support for Multi-Region
+// access-points.
+func (c SharedConfig) GetS3DisableMultiRegionAccessPoints(ctx context.Context) (value, ok bool, err error) {
+	if c.S3DisableMultiRegionAccessPoints == nil {
+		return false, false, nil
+	}
+
+	return *c.S3DisableMultiRegionAccessPoints, true, nil
+}
+
 // GetRegion returns the region for the profile if a region is set.
 func (c SharedConfig) getRegion(ctx context.Context) (string, bool, error) {
 	if len(c.Region) == 0 {
@@ -184,6 +218,24 @@ func (c SharedConfig) getRegion(ctx context.Context) (string, bool, error) {
 // GetCredentialsProvider returns the credentials for a profile if they were set.
 func (c SharedConfig) getCredentialsProvider() (aws.Credentials, bool, error) {
 	return c.Credentials, true, nil
+}
+
+// GetEC2IMDSEndpointMode implements a EC2IMDSEndpointMode option resolver interface.
+func (c SharedConfig) GetEC2IMDSEndpointMode() (imds.EndpointModeState, bool, error) {
+	if c.EC2IMDSEndpointMode == imds.EndpointModeStateUnset {
+		return imds.EndpointModeStateUnset, false, nil
+	}
+
+	return c.EC2IMDSEndpointMode, true, nil
+}
+
+// GetEC2IMDSEndpoint implements a EC2IMDSEndpoint option resolver interface.
+func (c SharedConfig) GetEC2IMDSEndpoint() (string, bool, error) {
+	if len(c.EC2IMDSEndpoint) == 0 {
+		return "", false, nil
+	}
+
+	return c.EC2IMDSEndpoint, true, nil
 }
 
 // loadSharedConfigIgnoreNotExist is an alias for loadSharedConfig with the
@@ -729,6 +781,25 @@ func mergeSections(dst, src ini.Sections) error {
 			dstSection.UpdateSourceFile(s3UseARNRegionKey, srcSection.SourceFile[s3UseARNRegionKey])
 		}
 
+		if srcSection.Has(s3DisableMultiRegionAccessPointsKey) {
+			key := srcSection.String(s3DisableMultiRegionAccessPointsKey)
+			val, err := ini.NewStringValue(key)
+			if err != nil {
+				return fmt.Errorf("error merging s3DisableMultiRegionAccessPointsKey, %w", err)
+			}
+
+			if dstSection.Has(s3DisableMultiRegionAccessPointsKey) {
+				dstSection.Logs = append(dstSection.Logs,
+					fmt.Sprintf("For profile: %v, overriding %v value, defined in %v "+
+						"with a %v value found in a duplicate profile defined at file %v. \n",
+						sectionName, s3DisableMultiRegionAccessPointsKey, dstSection.SourceFile[s3DisableMultiRegionAccessPointsKey],
+						s3DisableMultiRegionAccessPointsKey, srcSection.SourceFile[s3DisableMultiRegionAccessPointsKey]))
+			}
+
+			dstSection.UpdateValue(s3DisableMultiRegionAccessPointsKey, val)
+			dstSection.UpdateSourceFile(s3DisableMultiRegionAccessPointsKey, srcSection.SourceFile[s3DisableMultiRegionAccessPointsKey])
+		}
+
 		// set srcSection on dst srcSection
 		dst = dst.SetSection(sectionName, dstSection)
 	}
@@ -873,6 +944,12 @@ func (c *SharedConfig) setFromIniSection(profile string, section ini.Section) er
 
 	updateEndpointDiscoveryType(&c.EnableEndpointDiscovery, section, enableEndpointDiscoveryKey)
 	updateBoolPtr(&c.S3UseARNRegion, section, s3UseARNRegionKey)
+	updateBoolPtr(&c.S3DisableMultiRegionAccessPoints, section, s3DisableMultiRegionAccessPointsKey)
+
+	if err := updateEC2MetadataServiceEndpointMode(&c.EC2IMDSEndpointMode, section, ec2MetadataServiceEndpointModeKey); err != nil {
+		return fmt.Errorf("failed to load %s from shared config, %v", ec2MetadataServiceEndpointModeKey, err)
+	}
+	updateString(&c.EC2IMDSEndpoint, section, ec2MetadataServiceEndpointKey)
 
 	// Shared Credentials
 	creds := aws.Credentials{
@@ -887,6 +964,14 @@ func (c *SharedConfig) setFromIniSection(profile string, section ini.Section) er
 	}
 
 	return nil
+}
+
+func updateEC2MetadataServiceEndpointMode(endpointMode *imds.EndpointModeState, section ini.Section, key string) error {
+	if !section.Has(key) {
+		return nil
+	}
+	value := section.String(key)
+	return endpointMode.SetFromString(value)
 }
 
 func (c *SharedConfig) validateCredentialsConfig(profile string) error {
