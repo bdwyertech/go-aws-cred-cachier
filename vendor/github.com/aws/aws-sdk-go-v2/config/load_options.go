@@ -126,6 +126,25 @@ type LoadOptions struct {
 	// EnableEndpointDiscovery specifies if endpoint discovery is enable for
 	// the client.
 	EnableEndpointDiscovery aws.EndpointDiscoveryEnableState
+
+	// Specifies if the EC2 IMDS service client is enabled.
+	//
+	// AWS_EC2_METADATA_DISABLED=true
+	EC2IMDSClientEnableState imds.ClientEnableState
+
+	// Specifies the EC2 Instance Metadata Service default endpoint selection mode (IPv4 or IPv6)
+	EC2IMDSEndpointMode imds.EndpointModeState
+
+	// Specifies the EC2 Instance Metadata Service endpoint to use. If specified it overrides EC2IMDSEndpointMode.
+	EC2IMDSEndpoint string
+
+	// Specifies that SDK clients must resolve a dual-stack endpoint for
+	// services.
+	UseDualStackEndpoint aws.DualStackEndpointState
+
+	// Specifies that SDK clients must resolve a FIPS endpoint for
+	// services.
+	UseFIPSEndpoint aws.FIPSEndpointState
 }
 
 // getRegion returns Region from config's LoadOptions
@@ -641,4 +660,91 @@ func WithSSOProviderOptions(v func(*ssocreds.Options)) LoadOptionsFunc {
 		o.SSOProviderOptions = v
 		return nil
 	}
+}
+
+// GetEC2IMDSClientEnableState implements a EC2IMDSClientEnableState options resolver interface.
+func (o LoadOptions) GetEC2IMDSClientEnableState() (imds.ClientEnableState, bool, error) {
+	if o.EC2IMDSClientEnableState == imds.ClientDefaultEnableState {
+		return imds.ClientDefaultEnableState, false, nil
+	}
+
+	return o.EC2IMDSClientEnableState, true, nil
+}
+
+// GetEC2IMDSEndpointMode implements a EC2IMDSEndpointMode option resolver interface.
+func (o LoadOptions) GetEC2IMDSEndpointMode() (imds.EndpointModeState, bool, error) {
+	if o.EC2IMDSEndpointMode == imds.EndpointModeStateUnset {
+		return imds.EndpointModeStateUnset, false, nil
+	}
+
+	return o.EC2IMDSEndpointMode, true, nil
+}
+
+// GetEC2IMDSEndpoint implements a EC2IMDSEndpoint option resolver interface.
+func (o LoadOptions) GetEC2IMDSEndpoint() (string, bool, error) {
+	if len(o.EC2IMDSEndpoint) == 0 {
+		return "", false, nil
+	}
+
+	return o.EC2IMDSEndpoint, true, nil
+}
+
+// WithEC2IMDSClientEnableState is a helper function to construct functional options that sets the EC2IMDSClientEnableState.
+func WithEC2IMDSClientEnableState(v imds.ClientEnableState) LoadOptionsFunc {
+	return func(o *LoadOptions) error {
+		o.EC2IMDSClientEnableState = v
+		return nil
+	}
+}
+
+// WithEC2IMDSEndpointMode is a helper function to construct functional options that sets the EC2IMDSEndpointMode.
+func WithEC2IMDSEndpointMode(v imds.EndpointModeState) LoadOptionsFunc {
+	return func(o *LoadOptions) error {
+		o.EC2IMDSEndpointMode = v
+		return nil
+	}
+}
+
+// WithEC2IMDSEndpoint is a helper function to construct functional options that sets the EC2IMDSEndpoint.
+func WithEC2IMDSEndpoint(v string) LoadOptionsFunc {
+	return func(o *LoadOptions) error {
+		o.EC2IMDSEndpoint = v
+		return nil
+	}
+}
+
+// WithUseDualStackEndpoint is a helper function to construct
+// functional options that can be used to set UseDualStackEndpoint on LoadOptions.
+func WithUseDualStackEndpoint(v aws.DualStackEndpointState) LoadOptionsFunc {
+	return func(o *LoadOptions) error {
+		o.UseDualStackEndpoint = v
+		return nil
+	}
+}
+
+// GetUseDualStackEndpoint returns whether the service's dual-stack endpoint should be
+// used for requests.
+func (o LoadOptions) GetUseDualStackEndpoint(ctx context.Context) (value aws.DualStackEndpointState, found bool, err error) {
+	if o.UseDualStackEndpoint == aws.DualStackEndpointStateUnset {
+		return aws.DualStackEndpointStateUnset, false, nil
+	}
+	return o.UseDualStackEndpoint, true, nil
+}
+
+// WithUseFIPSEndpoint is a helper function to construct
+// functional options that can be used to set UseFIPSEndpoint on LoadOptions.
+func WithUseFIPSEndpoint(v aws.FIPSEndpointState) LoadOptionsFunc {
+	return func(o *LoadOptions) error {
+		o.UseFIPSEndpoint = v
+		return nil
+	}
+}
+
+// GetUseFIPSEndpoint returns whether the service's FIPS endpoint should be
+// used for requests.
+func (o LoadOptions) GetUseFIPSEndpoint(ctx context.Context) (value aws.FIPSEndpointState, found bool, err error) {
+	if o.UseFIPSEndpoint == aws.FIPSEndpointStateUnset {
+		return aws.FIPSEndpointStateUnset, false, nil
+	}
+	return o.UseFIPSEndpoint, true, nil
 }
