@@ -1,7 +1,7 @@
 # bou.ke/monkey v1.0.2
 ## explicit
 bou.ke/monkey
-# github.com/aws/aws-sdk-go-v2 v1.11.0
+# github.com/aws/aws-sdk-go-v2 v1.11.2
 ## explicit
 github.com/aws/aws-sdk-go-v2
 github.com/aws/aws-sdk-go-v2/aws
