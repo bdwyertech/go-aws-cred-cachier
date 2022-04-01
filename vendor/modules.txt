@@ -86,7 +86,7 @@ github.com/pmezard/go-difflib/difflib
 # github.com/sdomino/scribble v0.0.0-20200707180004-3cc68461d505
 ## explicit
 github.com/sdomino/scribble
-# github.com/stretchr/testify v1.7.0
+# github.com/stretchr/testify v1.7.1
 ## explicit
 github.com/stretchr/testify/assert
 # golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1
