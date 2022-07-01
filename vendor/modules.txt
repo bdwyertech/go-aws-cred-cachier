@@ -64,7 +64,7 @@ github.com/aws/smithy-go/rand
 github.com/aws/smithy-go/time
 github.com/aws/smithy-go/transport/http
 github.com/aws/smithy-go/transport/http/internal/io
-# github.com/davecgh/go-spew v1.1.0
+# github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/gofrs/flock v0.8.1
 ## explicit
@@ -86,12 +86,12 @@ github.com/pmezard/go-difflib/difflib
 # github.com/sdomino/scribble v0.0.0-20200707180004-3cc68461d505
 ## explicit
 github.com/sdomino/scribble
-# github.com/stretchr/testify v1.7.0
+# github.com/stretchr/testify v1.8.0
 ## explicit
 github.com/stretchr/testify/assert
 # golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+# gopkg.in/yaml.v3 v3.0.1
 gopkg.in/yaml.v3
