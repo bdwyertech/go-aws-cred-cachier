@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"bou.ke/monkey"
-	"github.com/kami-zh/go-capturer"
 	"github.com/stretchr/testify/assert"
+	"github.com/zenizh/go-capturer"
 )
 
 func TestDefault(t *testing.T) {
