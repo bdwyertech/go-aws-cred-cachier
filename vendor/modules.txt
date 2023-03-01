@@ -104,7 +104,7 @@ github.com/pmezard/go-difflib/difflib
 # github.com/sdomino/scribble v0.0.0-20200707180004-3cc68461d505
 ## explicit
 github.com/sdomino/scribble
-# github.com/stretchr/testify v1.8.0
+# github.com/stretchr/testify v1.8.2
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 # github.com/zenizh/go-capturer v0.0.0-20211219060012-52ea6c8fed04
